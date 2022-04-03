@@ -10,13 +10,21 @@ import numpy as np
 
 path = 'https://raw.githubusercontent.com/nalpalhao/DV_Practival/master/datasets/Lesson_1/'
 
-df_final = pd.read_excel('./data/circuits_drivers_races_results.xlsx')
+df_final = pd.read_excel('./data/circuits_drivers_races_constructors_results.xlsx')
 
 
+geo_path = 'https://raw.githubusercontent.com/nalpalhao/DV_Practival/master/datasets/Lesson_4/'
+import urllib.request, json 
+
+with urllib.request.urlopen(geo_path + 'countries.geojson') as url:
+        data_geo = json.loads(url.read().decode())
+
+for feature in data_geo['features']:
+        feature['id'] = feature['properties']['ADMIN']  
 
 # Requirements for the dash core components
 
-options = country_options = [
+circuit_options = [
     dict(label=circuit, value=circuit)
     for circuit in df_final['circuits.name'].unique()]
 
@@ -28,6 +36,13 @@ season_slider = dcc.RangeSlider(
                [1950, 1960, 1980, 1990, 2000, 2010, 2020]},
         value=[df_final['races.year'].min(), df_final['races.year'].max()],
         step=1
+    )
+
+    
+dropdown_circuits = dcc.Dropdown(
+        id='circuit_drop',
+        options=circuit_options,
+        value=['']
     )
 
 # The App itself
@@ -52,7 +67,26 @@ app.layout = html.Div([
         html.Br(),
         dcc.Graph(
             id='world-map-cricuits'
-    )], className='box', style={'margin': '15%', 'margin-left': '20%'}),    
+    )], className='box', style={'margin-top': '3%', 'margin-left': '20%'}),
+
+     html.Div([
+        html.Label('Circuit Choice'),
+        dropdown_circuits
+     ], className='box', style={'margin-top': '3%', 'margin-left': '20%'}),
+
+    html.Div([
+        html.H2('Winning Drivers:'),
+        html.Br(),
+        dcc.Graph(
+            id='winning-drivers'
+    )], className='box', style={'margin-top': '3%', 'margin-left': '20%'}), 
+
+     html.Div([
+        html.H2('Winning Constructors:'),
+        html.Br(),
+        dcc.Graph(
+            id='winning-constructors'
+    )], className='box', style={'margin-top': '3%', 'margin-left': '20%'}),    
 
 
 ])
@@ -60,27 +94,20 @@ app.layout = html.Div([
 ################################CALLBACK############################################
 
 @app.callback(
-    Output(component_id='world-map-cricuits', component_property='figure'),
-    [Input(component_id="season_slider", component_property='value')]
+    [Output(component_id='world-map-cricuits', component_property='figure'),
+     Output(component_id='winning-drivers', component_property='figure'), 
+     Output(component_id='winning-constructors', component_property='figure')],
+    [Input(component_id="season_slider", component_property='value'),
+     Input(component_id="circuit_drop", component_property='value')]
 )
 
 ################################CALLBACKFUNCTIONCIRCUITS############################
-def callback_1(year_value):
-    """""
-    data_bar = dict(type='bar',
-                    y=df_final[(df_final['circuits.name'] == input_value) & (df_final['positionText'] == 1)].groupby('drivers.surname')['drivers.surname'].count().sort_values(ascending = False).tolist(),
-                    x=df_final[(df_final['circuits.name'] == input_value) & (df_final['positionText'] == 1)].groupby('drivers.surname')['drivers.surname'].count().sort_values(ascending = False).index.tolist(),
-                    texttemplate='<b>%{y} Wins</b>',
-                    textposition='outside'
-                    )
+def callback_1(year_value, circuit_value):
+    print(year_value)
 
-    layout_bar = dict(yaxis=dict(range=(0, 10),
-                                 title='Number of Wins'
-                                 )
-                      )
+    ###########circuit infomration##########
+    
 
-    return go.Figure(data=data_bar, layout=layout_bar)
-"""
     # check which value is higher
     if year_value[0] >= year_value[1]:
         year_value_max = year_value[0]
@@ -93,16 +120,6 @@ def callback_1(year_value):
     df_seasons = df_final.loc[(df_final['races.year'] <= year_value_max) & (df_final['races.year'] >= year_value_min)]
 
 
-    geo_path = 'https://raw.githubusercontent.com/nalpalhao/DV_Practival/master/datasets/Lesson_4/'
-    import urllib.request, json 
-
-    with urllib.request.urlopen(geo_path + 'countries.geojson') as url:
-        data_geo = json.loads(url.read().decode())
-
-    for feature in data_geo['features']:
-        feature['id'] = feature['properties']['ADMIN']  
-
-
     data_scattergeo = dict(type='scattergeo', 
                         lat=df_seasons['circuits.lat'], 
                         lon=df_seasons['circuits.lng'],
@@ -113,20 +130,7 @@ def callback_1(year_value):
                                     size=7
                                     )
                         )
-    """"
-    layout_scattermap = dict(mapbox=dict(style='white-bg',
-                                        layers=[dict(source=feature,
-                                                    below='traces',
-                                                    type='fill',
-                                                    fill=dict(outlinecolor='gray')
-                                                            ) for feature in data_geo['features']]
-                                        ),
-                            title=dict(text='World Map',
-                                        x=.5 # Title relative position according to the xaxis, range (0,1)
-                                    )
-                            )
-    return go.Figure(data=data_scattermap, layout=layout_scattermap)
-    """
+
     layout_scattergeo = dict(geo=dict(scope='world',  #default
                                           projection=dict(type='equirectangular'
                                                          ),
@@ -139,7 +143,35 @@ def callback_1(year_value):
                                             x=.5 # Title relative position according to the xaxis, range (0,1)
                                            )
                                 )
-    return go.Figure(data=data_scattergeo, layout=layout_scattergeo)
+
+    #### Boxplot for winning drivers
+    #circuit_name = 'Bahrain International Circuit'
+    #circuit_value = circuit_name
     
+    print(circuit_value)
+    data_bar = dict(type='bar',
+                    y=df_seasons[(df_seasons['circuits.name'] == str(circuit_value)) & (df_seasons['positionText'] == 1)].groupby('drivers.surname')['drivers.surname'].count().sort_values(ascending = False).tolist(),
+                    x=df_seasons[(df_seasons['circuits.name'] == str(circuit_value)) & (df_seasons['positionText'] == 1)].groupby('drivers.surname')['drivers.surname'].count().sort_values(ascending = False).index.tolist(),
+                    texttemplate='<b>%{y} Wins</b>',
+                    textposition='outside'
+                    )
+
+    layout_bar = dict(yaxis=dict(range=(0, 10),
+                                 title='Number of Wins'
+                                 )
+                      )
+
+    #### Pie Chart 
+    import plotly.express as px
+    # This dataframe has 244 lines, but 4 distinct values for `day`
+    fig = px.pie(
+        values=df_seasons[(df_seasons['circuits.name'] == str(circuit_value)) & (df_seasons['positionText'] == 1)].groupby('constructors.name')['constructors.name'].count().sort_values(ascending = False).tolist(), 
+        names=df_seasons[(df_seasons['circuits.name'] == str(circuit_value)) & (df_seasons['positionText'] == 1)].groupby('constructors.name')['constructors.name'].count().sort_values(ascending = False).index.tolist(),
+        color_discrete_sequence=px.colors.sequential.RdBu)
+    
+    return go.Figure(data=data_scattergeo, layout=layout_scattergeo), \
+           go.Figure(data=data_bar, layout=layout_bar), \
+           fig
+
 if __name__ == '__main__':
     app.run_server(debug=True)
