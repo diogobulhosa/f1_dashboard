@@ -1,5 +1,7 @@
+from pydoc import classname
+from turtle import color
 import dash
-from dash import dcc
+from dash import dcc, dash_table
 from dash import html
 from dash.dependencies import Input, Output
 import plotly.graph_objects as go
@@ -12,6 +14,7 @@ import plotly.express as px
 path = 'https://raw.githubusercontent.com/nalpalhao/DV_Practival/master/datasets/Lesson_1/'
 
 df_final = pd.read_excel('./data/cdrcr.xlsx')
+df_points = pd.read_csv('./data/points.csv',header = 0, names=['a', 'b','c','d']).transpose()
 
 
 geo_path = 'https://raw.githubusercontent.com/nalpalhao/DV_Practival/master/datasets/Lesson_4/'
@@ -35,6 +38,7 @@ season_slider = dcc.RangeSlider(
         id='season_slider',
         min=df_final['races.year'].min(),
         max=2020,
+        tooltip={"placement": "bottom", "always_visible": True},
         marks={str(i): '{}'.format(str(i)) for i in
                list(range(1950,2021,5))},
         value=[df_final['races.year'].min(), df_final['races.year'].max()],
@@ -66,10 +70,10 @@ app.layout = html.Div([
 
     # side bar 
     html.Div([
-        html.Img(src=app.get_asset_url('formula-1-logo-7.png'), style={'width': '100%', 'top': '5%'}),
+        html.Img(src=app.get_asset_url('formula-1-logo-7.png'), style={'width': '100%', 'margin-top': '3%'}),
         html.H1(children='F1 DASH', style={'position': 'relative','top': '2%'}),
         html.Label('A Dashboard for a more comprehensive insight throughout years and years of the best racing there is.', 
-                    style={'color':'rgb(65 65 65)'})
+                    style={'color':'#e1e2df'})
     ], className='side_bar'),
 
     # choose circuit main information
@@ -96,39 +100,64 @@ app.layout = html.Div([
                 html.H3(id='circ_country')
             ],className='box_circ_info'),
         html.Div([
-                html.H4('Most Successfull Driver', style={'font-weight':'lighter'}),
-                html.H3(id='circ_msd')
+                html.H4('Years Running', style={'font-weight':'normal'}),
+                html.H3(id='years_running')
             ],className='box_circ_info'),
         html.Div([
                 html.H4('Most Successfull Constructor', style={'font-weight':'normal'}),
                 html.H3(id='circ_msc')
             ],className='box_circ_info'),
         html.Div([
-                html.H4('Number of Accidents', style={'font-weight':'normal'}),
-                html.H3(id='number_accidents')
+                html.H4('Most Successfull Driver', style={'font-weight':'lighter'}),
+                html.H3(id='circ_msd')
+            ],className='box_circ_info'),
+        html.Div([
+                html.H4('Pole King', style={'font-weight':'normal'}),
+                html.H3(id='pole_king')
             ],className='box_circ_info')
-    ], className='box', style={'margin-top': '3%', 'margin-left': '5%'}), 
+    ], className='box', style={'margin-top': '3%', 'margin-left': '3%', 'width': '30%'}), 
     
     html.Div([
-        html.H2('Fastest Lap Time Evoltuion:'),
+        html.H2('Average Lap Time Evoltuion:'),
+        html.H3('This is the average lap-time of the winner*'),
         html.Br(),
         dcc.Graph(
             id='lap-time'
-    )], className='box', style={'margin-top': '3%', 'margin-left': '20%'}),   
+    )], className='box', style={'margin-top': '3%', 'margin-left': '3%'}),   
+    ### daqui 
+    html.Div([        
+        html.Div([
+            html.H2('Winning Drivers:'),
+            html.H3('Points accumulated in this circuit. GP Champions by Team'),
 
-    html.Div([
-        html.H2('Winning Drivers:'),
-        html.Br(),
-        dcc.Graph(
-            id='winning-drivers'
-    )], className='box', style={'margin-top': '3%', 'margin-left': '20%'}), 
-
-    html.Div([
-        html.H2('Winning Constructors:'),
-        html.Br(),
-        dcc.Graph(
-            id='winning-constructors'
-    )], className='box', style={'margin-top': '3%', 'margin-left': '20%'}), 
+            html.Br(),
+            dcc.Graph(
+                id='winning-drivers'
+            ),
+            html.Div([
+                html.H3('The point system as changed throughout the years**'),
+                dash_table.DataTable(df_points.to_dict('records'), [{"name": str(i), "id": str(i)} for i in df_points.columns],
+                                    style_table={'maxWidth': '50%', 'height':300}, 
+                                    style_cell={'fontSize':10},
+                                    style_header={'backgroundColor': 'rgb(30, 30, 30)',
+                                                  'color': 'white'},
+                                    style_data={'backgroundColor': 'rgb(50, 50, 50)',
+                                                'color': 'white'},)           
+            ],className='box', style={'margin-top': '3%','margin-bottom': '5%',
+                                        'margin-left': '3%',
+                                        'box-shadow': '0px 0px 0px'})
+        
+        ],className='box', style={'margin-top': '3%',
+                                        'margin-left': '3%',
+                                        'display': 'table-cell',
+                                        'width': '70%', 'box-shadow': '0px 0px 0px'}), 
+        html.Div([
+            html.H2(''),
+            html.Br(),
+            dcc.Graph(
+                id='winning-constructors'
+        )], className='box', style={'margin-top': '3%','display': 'table-cell', 'width': '30%', 'box-shadow': '0px 0px 0px'})
+    ],className='box', style={'margin-top': '3%', 'margin-left': '3%', 'display': 'table', }),
 
     html.Div([
         html.H1('Head to Head'),
@@ -141,14 +170,25 @@ app.layout = html.Div([
             id='dvsc_dropdown1',
             options=[],
             multi=True),            
-        ], className='box', style={'margin-top': '3%', 'margin-left': '20%'}),
-
-    html.Div([
-        html.H1('Finished Races'),
-        dcc.Graph(
-            id='finishing_races')
-    ],className='box', style={'margin-top': '3%', 'margin-left': '20%'}),
-
+        ], className='box', style={'margin-top': '3%', 'margin-left': '3%'}),
+        html.Div([
+            html.Div([
+            html.H2('Average Laps'),
+            html.H3('Some older Drivers or Team might not show'),
+            html.Br(),
+            dcc.Graph(
+                id='avg_laps_h2h'
+            )], className='box', style={'margin-top': '3%',
+                                        'margin-left': '3%',
+                                        'display': 'table-cell',
+                                        'width': '70%', 'box-shadow': '0px 0px 0px'}), 
+            html.Div([
+                html.H2('Finishing Races:'),
+                html.Br(),
+                dcc.Graph(
+                    id='finishing_races'
+            )], className='box', style={'margin-top': '3%','display': 'table-cell', 'width': '30%', 'box-shadow': '0px 0px 0px'})
+    ],className='box', style={'margin-top': '3%', 'margin-left': '3%', 'display': 'table', })
 ], className='main')
 
 ################################CALLBACK############################################
@@ -194,11 +234,14 @@ def callback_1(year_value):
                                           lakecolor='white'
                                          ),
                                 
-                                margin = dict(t = 0, b = 0, l = 0, r=0),
+                                margin = dict(t = 30, b = 0, l = 0, r=0, pad=0),
 
                                 title=dict(text='Circuits Around the World',
-                                            x=.5 # Title relative position according to the xaxis, range (0,1)
-                                           )
+                                           font_color = '#e1e2df', 
+                                           x=.5 # Title relative position according to the xaxis, range (0,1)
+                                           ),
+                                paper_bgcolor='rgba(0,0,0,0)',
+                                plot_bgcolor='rgba(0,0,0,0)'
                                 )
     return go.Figure(data=data_scattergeo, layout=layout_scattergeo)
 
@@ -211,7 +254,8 @@ def callback_1(year_value):
      Output(component_id='circ_country', component_property='children'),
      Output(component_id='circ_msd', component_property='children'),
      Output(component_id='circ_msc', component_property='children'),
-     Output(component_id='number_accidents', component_property='children')],
+     Output(component_id='years_running', component_property='children'),
+     Output(component_id='pole_king', component_property='children')],
     [Input(component_id="season_slider", component_property='value'),
      Input(component_id="world-map-cricuits", component_property='clickData')]
 )
@@ -241,12 +285,20 @@ def callback_2(year_value, click_map):
     msd = df_final_circuit[(df_final_circuit['circuits.name'] == str(circuit_value)) & (df_final_circuit['positionText'] == 1)].groupby('drivers.fullname')['drivers.fullname'].count().sort_values(ascending = False).index.tolist()[0]
     msc = df_final_circuit[(df_final_circuit['circuits.name'] == str(circuit_value)) & (df_final_circuit['positionText'] == 1)].groupby('constructors.name')['constructors.name'].count().sort_values(ascending = False).index.tolist()[0]    
     number_accidents = len(df_final_circuit[(df_final_circuit['statusId'] == 3) | (df_final_circuit['statusId'] == 4)])
+    year_list = (df_final_circuit['races.year'].unique()).tolist()
+    year_list.sort()
+    year_str = str(year_list)[1:-1]
+    pole_king = df_final_circuit[(df_final_circuit['grid'] == 1)].groupby('drivers.fullname',)['drivers.fullname'].count().sort_values(ascending = False).index.tolist()[0]
     #### LineChart Best Lap Times ####
-    gen_fast_lap = df_final_circuit[df_final_circuit['rank']==1]
-    gen_fast_lap['fastestLapTime'] = gen_fast_lap['fastestLapTime'].astype('str').apply(lambda x: time_to_mili(x))
-    laptime = px.scatter(gen_fast_lap, x="races.year", y="fastestLapTime", title='Fastest Lap Time',color_discrete_sequence=px.colors.sequential.RdBu, color="drivers.fullname", symbol="drivers.fullname")
+    avg_lap_time = df_final_circuit[df_final_circuit['positionText']==1]
+    avg_lap_time['avglaptime'] = avg_lap_time['milliseconds'] / avg_lap_time['laps']
+    #gen_fast_lap = df_final_circuit[df_final_circuit['rank']==1]
+    #gen_fast_lap['fastestLapTime'] = gen_fast_lap['fastestLapTime'].astype('str').apply(lambda x: time_to_mili(x))
+    laptime = px.scatter(avg_lap_time, x="races.year", y="avglaptime",color_discrete_sequence=px.colors.sequential.RdBu, color="drivers.fullname")
     laptime.update_layout(font_color = 'white', paper_bgcolor='rgba(0,0,0,0)', yaxis = {'type': 'date','tickformat': '%M:%S:%ss'},
-                      plot_bgcolor='rgba(0,0,0,0)')
+                      plot_bgcolor='rgba(0,0,0,0)', xaxis_title="Race Year",
+                      yaxis_title="Average Lap Time")
+    laptime.update_traces(marker=dict(size=18))
 
     #### Boxplot for winning drivers
     #circuit_name = 'Bahrain International Circuit'
@@ -268,7 +320,7 @@ def callback_2(year_value, click_map):
     fig.update_layout(paper_bgcolor='rgba(0,0,0,0)',
                       plot_bgcolor='rgba(0,0,0,0)')
     return laptime, pointsplot, \
-           fig, str(city), str(country), str(msd), str(msc),str(number_accidents)    
+           fig, str(city), str(country), str(msd), str(msc),str(year_str), str(pole_king)    
 
 ################################CALLBACKFUNCTIONCIRCUITS3############################
 @app.callback(
@@ -301,7 +353,9 @@ def callback_3(year_value, click_map, dvsc_value):
 
 ################################CALLBACKFUNCTIONCIRCUITS4############################
 @app.callback(
-    Output(component_id='finishing_races', component_property='figure'),
+     [Output(component_id='finishing_races', component_property='figure'),
+     Output(component_id='avg_laps_h2h', component_property='figure') 
+     ],
     [Input(component_id='season_slider', component_property='value'),
      Input(component_id="world-map-cricuits", component_property='clickData'),
      Input(component_id="dvsc_radio", component_property='value'),
@@ -382,10 +436,21 @@ def callback_4(year_value, click_map, dvsc_value, client_dc_value):
         )
     ))
 
-    races_plot.update_layout(barmode='stack')
-
-    return races_plot
-
+    races_plot.update_layout(barmode='stack', paper_bgcolor='rgba(0,0,0,0)',font_color = 'white',
+                      plot_bgcolor='rgba(0,0,0,0)')
+    # Plot for Avg Lap on Head to Head
+    dc_avg_lap = df_final_circuit[(df_final_circuit[filter_dc].isin(client_dc_value))&(df_final_circuit['statusId']==1)]
+    dc_avg_lap['avglaptime'] = dc_avg_lap['milliseconds'] / dc_avg_lap['laps']
+    dc_avg_lap = dc_avg_lap.groupby(['races.year', filter_dc])['avglaptime'].min().reset_index()
+    
+    avgh2h = px.scatter(dc_avg_lap, x="races.year", y="avglaptime", title='Fastest Lap Time',color_discrete_sequence=px.colors.sequential.RdBu, color=filter_dc)
+    avgh2h.update_traces(marker=dict(size=15))
+    avgh2h.update_layout(font_color = 'white', paper_bgcolor='rgba(0,0,0,0)', yaxis = {'type': 'date','tickformat': '%M:%S:%ss'},
+                        plot_bgcolor='rgba(0,0,0,0)', 
+                        xaxis_title="Race Year",
+                        yaxis_title="Average Lap Time")
+    
+    return races_plot, avgh2h
 
 
 if __name__ == '__main__':

@@ -1,5 +1,5 @@
 body {
-    background-color:#484848;
+    background-color:#1B1B1C;
     font-family: "Open Sans", verdana, arial, sans-serif;
   }
   
@@ -9,7 +9,7 @@ body {
     position: fixed;
     top: 0;
     left: 0;
-    background-color: #696969;
+    background-color: #39393A;
     padding-left: 1%;
     padding-right: 1%;
     color:rgb(7, 7, 7);
@@ -19,7 +19,7 @@ body {
     font-size: 15px; 
     padding: 0px 10px;
     padding-left: 16%;
-    color:#484848;
+    color:#e1e2df;
   }
   
   .footer {
@@ -32,8 +32,8 @@ body {
   }
   
   h1 {
-    color:#484848;
-    font-family: 'Monaco';
+    color:#e1e2df;
+    font-family: 'Titallium';
   }
   
   h2 {
@@ -67,28 +67,48 @@ body {
   
   .box {
     border-radius: 20px;
-    background-color: #787878;
+    background-color: #39393A;
     padding: 25px;
     box-shadow: 2px 2px 2px lightgrey;
+    width:90%;
   }
     
   .box_circ_info{
     border-radius: 2px;
-    background-color: #8181818e;    
+    background-color: #5656568e;    
     margin: 2px;
     box-shadow: 2px 2px 2px lightgrey;
     justify-content: left;
-    width: 50%;
+    width: 90%;
     text-align: center;    
   }
 
-  /* Drop down */
-  #drop_map .VirtualizedSelectFocusedOption {
-    background-color:#ebb36abf;
+  /* Slider */
+  #season_slider .rc-slider-track{
+    background-color: darkgrey;
+  }
+  #season_slider .rc-slider-dot-active {  
+    border-color: white;
+    border: solid 2px #901a1a;
   }
   
-  #drop_continent .VirtualizedSelectFocusedOption {
-    background-color:#ebb36abf;
+  #season_slider .rc-slider-handle {
+    background-color: #901a1a;
+    border-color: darkgrey;
+  }
+  
+  #season_slider .rc-slider-handle:hover {
+    border-color: #901a1a;
+  }
+  
+ 
+
+  /* Drop down */
+  #dvsc_dropdown1 .VirtualizedSelectFocusedOption {
+    background-color:#5656568e;
+  }
+  #dvsc_dropdown1 .VirtualizedSelectSelectedOption {
+    font-weight: bold;
   }
   
   /* Radio buttons */
