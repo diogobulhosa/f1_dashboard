@@ -1,3 +1,4 @@
+from http import client
 from pydoc import classname
 from turtle import color
 import dash
@@ -9,13 +10,15 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 import warnings
+import dash_bootstrap_components as dbc
 warnings.filterwarnings("ignore")
 
 # Dataset Processing
 
 path = 'https://raw.githubusercontent.com/nalpalhao/DV_Practival/master/datasets/Lesson_1/'
 
-df_final = pd.read_excel('./data/cdrcr.xlsx')
+df_final = pd.read_excel('./data/cdrcrv2.xlsx')
+df_final['drivers.fullname'] = df_final[['drivers.forename','drivers.surname']].apply(lambda x: ' '.join(x), axis=1)
 df_points = pd.read_csv('./data/points.csv',header = 0)
 
 # Requirements for the dash core components
@@ -54,22 +57,12 @@ def time_to_mili(s):
 
 # The App itself
 
-app = dash.Dash(__name__)
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
 server = app.server
 
-app.layout = html.Div([
-    # side bar 
-    html.Div([
-        html.Img(src=app.get_asset_url('formula-1-logo-7.png'), style={'width': '100%', 'margin-top': '3%'}),
-        html.H1(children='F1 DASH', style={'position': 'relative','top': '2%'}),
-        html.Label('A Dashboard for a more comprehensive insight throughout years and years of the best racing there is.', 
-                    style={'color':'#e1e2df'}),
-        html.H3('Dashboard by: Diogo Bulhosa, Francisco Costa, Mafalda Figueiredo, Rodrigo Pimenta', 
-                    style={'color':'#e1e2df', 'position': 'absolute', 'bottom': '0', 'left':'0'})
-    ], className='side_bar'),
-
-    # choose circuit main information
+tab_circuits =  html.Div([
+    ### choose circuit main information
     html.Div([
         html.Div([
             html.H2('Choose a Circuit:',style={'font-weight': 'bold'} ),
@@ -83,7 +76,7 @@ app.layout = html.Div([
             html.Br(),
             html.H3(id='check_update',style={'font-weight':'bold', 'margin-down':'0%'})], className='box', style={'margin-top': '3%'})
     ],style={'margin-left': '3%'}),
-    # first part of the page
+    ### first part of the page
     html.Div([
         html.Div([
             html.H2('Circuit Information:'),
@@ -120,9 +113,9 @@ app.layout = html.Div([
             html.H2('Chances of Pole also winning the race (%)', style={'text-align':'center'}),
             dcc.Graph(
                 id='pole_semi'),
-                ], className='box', style={'margin-left': '23%','width': '30%'})   
-    ],className='circ_box', style={'margin-left': '3%','margin-top': '3%', 'width':'100%', 'max-height': '600px'}),
-    # Lap Info
+                ], className='box', style={'margin-left': '30%','width': '30%'})   
+    ],className='circ_box', style={'margin-left': '3%','margin-top': '3%', 'max-height': '700px'}),
+    ### Lap Info
     html.Div([
         html.H2('Average Lap Time Evoltuion:'),
         html.H3('This is the average lap-time of the winner. It is important to notice that time behind safety-cars or weather conditions are not taken into consideration.'),
@@ -167,7 +160,7 @@ app.layout = html.Div([
                                                 'color': 'white'},)  
             ], className='box', style={'margin-top': '3%','display': 'table-cell', 'width': '30%', 'box-shadow': '0px 0px 0px','padding-bottom':'10px'})
     ],className='box', style={'margin-top': '3%', 'margin-left': '3%', 'display': 'table', 'padding-bottom':'10px'}),
-
+    #### head to head
     html.Div([
         html.H2('Head to Head', style={'font-weight': 'bold'}),
         html.Label('Analyse Driver or Constructors'),
@@ -179,7 +172,8 @@ app.layout = html.Div([
             id='dvsc_dropdown1',
             options=[],
             value=['McLaren'],
-            multi=True),            
+            multi=True,
+            style={'color': 'black', 'background-color':'#d3d3d3'}),            
         ], className='box', style={'margin-top': '3%', 'margin-left': '3%'}),
         html.Div([
             html.Div([
@@ -202,6 +196,94 @@ app.layout = html.Div([
             )], className='box', style={'margin-top': '3%','display': 'table-cell', 'width': '50%', 'box-shadow': '0px 0px 0px'})
     ],className='box', style={'margin-top': '3%', 'margin-left': '3%', 'display': 'table', })
 ], className='main')
+
+tab_pilots =  html.Div([
+    html.Div([
+        html.H2('Choose one driver', style={'font-weight': 'bold'}),
+        html.H3('Choose one driver you would like to know more about'),
+        dcc.Dropdown(
+            id='driver_dropdown2',
+            options=df_final['drivers.fullname'].unique(),
+            value='Lewis Hamilton',
+            multi=False, 
+            style={'color': 'black', 'background-color':'#d3d3d3'})         
+        ], className='box', style={'margin-top': '3%', 'margin-left': '3%'}),
+        html.Div([
+            html.Div([
+                html.H2('Driver Information:'),
+                html.Div([
+                        html.H4('Country', style={'font-weight':'bold'}),
+                        html.H3(id='driver-country')
+                    ],className='box_circ_info'),
+                html.Div([
+                        html.H4('Number of Podiums', style={'font-weight':'bold'}),
+                        html.H3(id='npodiums')
+                    ],className='box_circ_info'),
+                html.Div([
+                        html.H4('Carreer Points', style={'font-weight':'bold'}),
+                        html.H3(id='carreerpoints')
+                    ],className='box_circ_info'),
+                html.Div([
+                        html.H4('Races Entered', style={'font-weight':'bold'}),
+                        html.H3(id='races_entered')
+                    ],className='box_circ_info'),
+                html.Div([
+                        html.H4('Highest Race Finish', style={'font-weight':'bold'}),
+                        html.H3(id='highest_race_finish')
+                    ],className='box_circ_info'),
+                html.Div([
+                        html.H4('Highest Grid Start', style={'font-weight':'bold'}),
+                        html.H3(id='highest_grid')
+                    ],className='box_circ_info'),
+                html.Div([
+                        html.H4('Number of Retirements', style={'font-weight':'bold'}),
+                        html.H3(id='naccidents')
+                    ],className='box_circ_info')
+                ], className='box', style={'margin-top': '3%',
+                                        'margin-left': '3%',
+                                        'display': 'table-cell',
+                                        'width': '65%', 'box-shadow': '0px 0px 0px'}), 
+            html.Div([
+                html.H2('Constructors the Driver as Represented'),
+                html.Br(),
+                dcc.Graph(
+                    id='driver-const')
+                ], className='box', style={'margin-top': '3%','display': 'table-cell', 'width': '50%', 'box-shadow': '0px 0px 0px'})
+        ],className='box', style={'margin-top': '3%', 'margin-left': '3%', 'display': 'table', }),
+
+        html.Div([
+            html.H2('Carreer Finishes'),
+            html.H3('The Positions are between 1-20, the 21th position refers to DNF.'),
+            dcc.Graph(
+                id='race-finish'),                
+        ], className='box', style={'margin-top': '3%', 'margin-left': '3%'}),
+         html.Div([
+            html.H2('Total Points Each Season'),
+            dcc.Graph(
+                id='points-season'),                
+        ], className='box', style={'margin-top': '3%', 'margin-left': '3%'}),
+], className='main')
+
+
+app.layout = dbc.Container([ 
+        html.Div([
+            html.Img(src=app.get_asset_url('formula-1-logo-7.png'), style={'width': '100%', 'margin-top': '3%'}),
+            html.H1(children='F1 DASH', style={'position': 'relative','top': '2%'}),
+            html.Label('A Dashboard for a more comprehensive insight throughout years and years of the best racing there is.', 
+                        style={'color':'#e1e2df'}),
+            html.H3('Dashboard by: Diogo Bulhosa, Francisco Costa, Mafalda Figueiredo, Rodrigo Pimenta', 
+                        style={'color':'#e1e2df', 'position': 'absolute', 'bottom': '0', 'left':'0'})
+        ], className='side_bar'),
+        
+        html.Div([
+            dbc.Tabs([
+                    dbc.Tab(tab_circuits, label="Circuits", labelClassName ='labels', tabClassName = 'tabs'),
+                    dbc.Tab(tab_pilots, label="Pilots", labelClassName ='labels', tabClassName = 'tabs', tab_style={'margin-left' : '0%'}),
+                ])
+        ],className='boxtabs', style={'margin-top': '3%', 'margin-left': '15%'}),
+    ],
+    fluid=True,
+)
 
 ################################CALLBACK############################################
 
@@ -307,8 +389,6 @@ def callback_2(year_value, click_map):
     
     else: update_state = 'Circuit Updated'
     
-    df_final_circuit['drivers.fullname'] = df_final_circuit[['drivers.forename','drivers.surname']].apply(lambda x: ' '.join(x), axis=1)
-
     # City # Country # Most Successful Driver / Constructor # Total Number of DNF # 
     city = df_final_circuit['circuits.location'].unique()[0]
     country = df_final_circuit['circuits.country'].unique()[0]
@@ -552,20 +632,20 @@ def callback_4(year_value, click_map, dvsc_value, client_dc_value):
             color='rgb(69, 69, 69)',
             line=dict(color='DarkGrey', width=1.1)
         )
-    ))
+    ))  
 
     races_plot.add_trace(go.Bar(
         y=pplot_percentages[filter_dc],
-        x=pplot_percentages['firstp_percentage'],
-        name='First Position',
+        x=pplot_percentages['thirdp_percentage'],
+        name='Third Position',
         orientation='h',
         textposition='inside',
-        text = pplot_percentages['firstp'],
+        text = pplot_percentages['thirdp'],
         marker=dict(
-            color='rgb(212, 175, 55)',
+            color='rgb(205, 127, 50)',
             line=dict(color='DarkGrey', width=1.1)
         )
-    ))
+    ))  
 
     races_plot.add_trace(go.Bar(
         y=pplot_percentages[filter_dc],
@@ -580,18 +660,21 @@ def callback_4(year_value, click_map, dvsc_value, client_dc_value):
         )
     ))
 
+    
     races_plot.add_trace(go.Bar(
         y=pplot_percentages[filter_dc],
-        x=pplot_percentages['thirdp_percentage'],
-        name='Third Position',
+        x=pplot_percentages['firstp_percentage'],
+        name='First Position',
         orientation='h',
         textposition='inside',
-        text = pplot_percentages['thirdp'],
+        text = pplot_percentages['firstp'],
         marker=dict(
-            color='rgb(205, 127, 50)',
+            color='rgb(212, 175, 55)',
             line=dict(color='DarkGrey', width=1.1)
         )
-    ))   
+    ))
+
+     
     races_plot.update_yaxes(tickfont = dict(size=10))
     races_plot.update_layout(barmode='stack', 
                         plot_bgcolor = 'rgba(0, 0, 0, 0)',
@@ -616,6 +699,68 @@ def callback_4(year_value, click_map, dvsc_value, client_dc_value):
                         yaxis_title="Average Lap Time")
     
     return races_plot, avgh2h
+
+################################CALLBACKTABDRIVERS############################
+@app.callback(
+    [Output(component_id='race-finish', component_property='figure'),
+     Output(component_id='points-season', component_property='figure'),
+     Output(component_id='driver-const', component_property='figure'),
+     Output(component_id='driver-country', component_property='children'), # circ _info call backs start here
+     Output(component_id='npodiums', component_property='children'),
+     Output(component_id='carreerpoints', component_property='children'),
+     Output(component_id='races_entered', component_property='children'),
+     Output(component_id='highest_race_finish', component_property='children'),
+     Output(component_id='highest_grid', component_property='children'),
+     Output(component_id='naccidents', component_property='children'),
+     ],
+    Input(component_id="driver_dropdown2", component_property='value')
+)
+
+def callback_5(client_driver):
+    print(client_driver)
+    if not client_driver: 
+        client_driver='Lewis Hamilton'
+    print(client_driver)
+
+    driver_nationality = df_final[df_final['drivers.fullname']==client_driver]['drivers.nationality'].iloc[0]
+    podium_pos = [1,2,3]
+    npodiums = len(df_final[(df_final['drivers.fullname']==client_driver) & (df_final['positionText'].isin(podium_pos))])
+    npoints = df_final[(df_final['drivers.fullname']==client_driver)].groupby('drivers.fullname')['points'].sum().reset_index()['points'].iloc[0]
+    nraces = len(df_final[(df_final['drivers.fullname']==client_driver)])
+    ret_list = ['R', 'F', 'W', 'N', 'D','E']
+    race_serie = df_final[(df_final['drivers.fullname']==client_driver) & ~(df_final['positionText'].isin(ret_list))]['positionText']
+    highest_rf = race_serie.astype(int).min()
+    highest_grid_start = df_final[(df_final['drivers.fullname']==client_driver)]['grid'].min()
+    number_ret = len(df_final[(df_final['drivers.fullname']==client_driver) & (df_final['positionText'].isin(ret_list))])
+    print(client_driver, str(driver_nationality), str(npodiums), str(npoints), str(nraces), str(highest_rf), str(highest_grid_start), str(number_ret))
+    ##### Position Scatter ######
+    df_pos = df_final[(df_final['drivers.fullname']==client_driver)]
+    df_pos = df_pos.groupby(['races.year', 'races.round','positionText']).count().reset_index()
+    df_pos['posTextInt'] = df_pos["positionText"].map(lambda x: '21' if x in ret_list else x)  
+    df_pos['round_year'] = df_pos['races.round'].astype(str) + ' ' + df_pos['races.year'].astype(str)
+    driver_position = px.scatter(df_pos, x="round_year", y="posTextInt")
+    driver_position.update_layout(font_color = 'white', paper_bgcolor='rgba(0,0,0,0)',
+                      plot_bgcolor='rgba(0,0,0,0)', xaxis_title="Race Year",
+                      yaxis_title="Position")
+    driver_position.update_yaxes(autorange="reversed"),                 
+    driver_position.update_traces(marker=dict(size=5, color='red'))
+
+    #### Point Progress ####
+    driver_points_gen = df_final[(df_final['drivers.fullname']==client_driver)].groupby('races.year')['points'].sum().reset_index()
+
+    pointsplot = px.bar(driver_points_gen, x='races.year', y = 'points', labels={'races.year':'Season', 'points': 'Points'}, color_discrete_sequence=px.colors.sequential.RdBu, text='points')
+    pointsplot.update_traces(textposition='outside',  texttemplate='<b>%{y} Points</b>')
+    pointsplot.update_layout(font_color = 'white', paper_bgcolor='rgba(0,0,0,0)',
+                            plot_bgcolor='rgba(0,0,0,0)')
+
+    #### Constructor Driver ####
+    driv_const = df_final[(df_final['drivers.fullname']==client_driver)].groupby(['drivers.fullname','constructors.name'])['raceId'].count().reset_index()
+    driver_const = px.pie(driv_const, values='raceId', names='constructors.name',color_discrete_sequence=px.colors.sequential.RdBu,width=650, height=325)
+    driver_const.update_layout(paper_bgcolor='rgba(0,0,0,0)', font_color = 'white',
+                      plot_bgcolor='rgba(0,0,0,0)')  
+    
+    return driver_position, pointsplot, driver_const, str(driver_nationality), str(npodiums), str(npoints), str(nraces), str(highest_rf), str(highest_grid_start), str(number_ret)
+
 
 
 if __name__ == '__main__':

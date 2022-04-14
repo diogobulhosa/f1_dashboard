@@ -18,7 +18,8 @@ body {
   .main {
     font-size: 15px; 
     padding: 0px 10px;
-    padding-left: 16%;
+    padding-left: 0%;
+    padding-right: 0%;
     color:#e1e2df;
   }
   
@@ -64,7 +65,14 @@ body {
   }
   
   /* Boxes */
-  
+
+  .boxtabs {
+    border-radius: 20px;
+    background-color: #1B1B1C;
+    padding: 2%;
+    width:80%;
+  }
+
   .box {
     border-radius: 20px;
     background-color: #39393A;
@@ -89,6 +97,22 @@ body {
     background-color:#1B1B1C;
   }
 
+  /* Tabs */
+  .tabs {
+    border-top-left-radius:10px;
+    border-top-right-radius:10px;
+    margin-top: 2%;
+    margin-left : 5%;
+    margin-bottom: 0%;
+    background-color: #39393A;  
+    width: 20%;  
+    text-align: center;
+  }
+
+  .labels {
+    color: firebrick;
+  }
+
   /* Slider */
   #season_slider .rc-slider-track{
     background-color: darkgrey;
@@ -109,11 +133,20 @@ body {
   
  
 
+
   /* Drop down */
   #dvsc_dropdown1 .VirtualizedSelectFocusedOption {
     background-color:#5656568e;
   }
   #dvsc_dropdown1 .VirtualizedSelectSelectedOption {
+    font-weight: bold;
+  }
+
+  /* Drop down */
+  #driver_dropdown2 .VirtualizedSelectFocusedOption {
+    background-color:#5656568e;
+  }
+  #driver_dropdown2 .VirtualizedSelectSelectedOption {
     font-weight: bold;
   }
   
