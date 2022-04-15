@@ -2,9 +2,16 @@ import dash
 from dash import dcc
 from dash import html
 from dash.dependencies import Input, Output
+import pandas as pd
+
+df_final = pd.read_csv("cdrcrv2.csv",  sep=',',  encoding='latin-1')
+df_points = pd.read_csv('https://raw.githubusercontent.com/diogobulhosa/f1_dashboard/main/data/points.csv',header = 0)
+
+
 
 app = dash.Dash(__name__)
 server = app.server
+
 
 app.layout = html.Div([
     dcc.Input(id='input',
