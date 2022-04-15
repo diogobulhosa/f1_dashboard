@@ -1,1 +1,1 @@
-web: gunicorn f1_dash1:server
+web: gunicorn f1_dash1: server
