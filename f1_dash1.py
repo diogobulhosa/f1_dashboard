@@ -14,11 +14,8 @@ import dash_bootstrap_components as dbc
 warnings.filterwarnings("ignore")
 
 # Dataset Processing
-
-#path = 'https://raw.githubusercontent.com/diogobulhosa/f1_dashboard/main/data/'
-
-df_final = pd.read_csv("./data/cdrcrv2.csv",  sep=',',  encoding='latin-1')
-df_points = pd.read_csv("./data/points.csv",header = 0)
+df_final = pd.read_csv("cdrcrv2.csv",  sep=',',  encoding='latin-1')
+df_points = pd.read_csv('https://raw.githubusercontent.com/diogobulhosa/f1_dashboard/main/data/points.csv',header = 0)
 
 
 df_final['drivers.fullname'] = df_final[['drivers.forename','drivers.surname']].apply(lambda x: ' '.join(x), axis=1)
