@@ -39,13 +39,6 @@ season_slider = dcc.RangeSlider(
         value=[df_final['races.year'].min(), df_final['races.year'].max()],
         step=1
     )
-"""    
-dropdown_circuits = dcc.Dropdown(
-        id='circuit_drop',
-        options=[],
-        value=['']
-    )
-"""
 
 def time_to_mili(s):
     hours, minutes, seconds = (["0", "0"] + s.split(":"))[-3:]
@@ -295,8 +288,6 @@ app.layout = dbc.Container([
 ################################CALLBACKFUNCTIONCIRCUITS############################
 # recebe os years, retorna o grafico+lista de circuitos available nessa altura
 def callback_1(year_value):
-    print(year_value)
-
     # check which value is higher
     if year_value[0] >= year_value[1]:
         year_value_max = year_value[0]
@@ -366,7 +357,6 @@ def callback_2(year_value, click_map):
         circuit_value = 'Circuit de Monaco'
         #return dash.no_update  
     else: circuit_value = click_map['points'][0]['text']
-    print(circuit_value)
     # year loc
     if year_value[0] >= year_value[1]:
         year_value_max = year_value[0]
@@ -559,7 +549,6 @@ def callback_4(year_value, click_map, dvsc_value, client_dc_value):
     if (client_dc_value is None): 
         return dash.no_update
 
-    print(client_dc_value)
     ret_list = ['R', 'F', 'W', 'N', 'D','E']
     plot_percentages = pd.DataFrame(columns=[filter_dc,'dnf','firstp','secondp','thirdp','nraces'])
     dc_n_list = df_final_circuit[filter_dc].unique().tolist()
@@ -717,10 +706,8 @@ def callback_4(year_value, click_map, dvsc_value, client_dc_value):
 )
 
 def callback_5(client_driver):
-    print(client_driver)
     if not client_driver: 
         client_driver='Lewis Hamilton'
-    print(client_driver)
 
     driver_nationality = df_final[df_final['drivers.fullname']==client_driver]['drivers.nationality'].iloc[0]
     podium_pos = [1,2,3]
@@ -732,7 +719,6 @@ def callback_5(client_driver):
     highest_rf = race_serie.astype(int).min()
     highest_grid_start = df_final[(df_final['drivers.fullname']==client_driver)]['grid'].min()
     number_ret = len(df_final[(df_final['drivers.fullname']==client_driver) & (df_final['positionText'].isin(ret_list))])
-    print(client_driver, str(driver_nationality), str(npodiums), str(npoints), str(nraces), str(highest_rf), str(highest_grid_start), str(number_ret))
     ##### Position Scatter ######
     df_pos = df_final[(df_final['drivers.fullname']==client_driver)]
     df_pos = df_pos.groupby(['races.year', 'races.round','positionText']).count().reset_index()
