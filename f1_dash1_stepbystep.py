@@ -9,9 +9,7 @@ import plotly.graph_objects as go
 import pandas as pd
 import numpy as np
 import plotly.express as px
-import warnings
 import dash_bootstrap_components as dbc
-warnings.filterwarnings("ignore")
 
 # Dataset Processing
 df_final = pd.read_csv("cdrcrv2.csv",  sep=',',  encoding='latin-1')
@@ -78,8 +76,7 @@ app.layout = html.Div([
 ################################CALLBACK############################################
 
 @app.callback(
-    Output(component_id='world-map-cricuits', component_property='figure'),
-    [Input('season_slider', 'value')]
+    Output(component_id='check_update', component_property='children'),
 )
 
 ################################CALLBACKFUNCTIONCIRCUITS############################
