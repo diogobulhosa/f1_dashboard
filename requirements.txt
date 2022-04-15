@@ -1,8 +1,6 @@
-gunicorn
-plotly
-requests
-dash-bootstrap-components
 dash
+dash_bootstrap_components
+numpy=
 pandas
-numpy
-dash_renderer
+plotly
+warnings

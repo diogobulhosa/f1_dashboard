@@ -15,13 +15,18 @@ warnings.filterwarnings("ignore")
 
 # Dataset Processing
 
-path = 'https://raw.githubusercontent.com/nalpalhao/DV_Practival/master/datasets/Lesson_1/'
+#path = 'https://raw.githubusercontent.com/diogobulhosa/f1_dashboard/main/data/'
 
-df_final = pd.read_excel('./data/cdrcrv2.xlsx')
+df_final = pd.read_csv("./data/cdrcrv2.csv",  sep=',',  encoding='latin-1')
+df_points = pd.read_csv("./data/points.csv",header = 0)
+
+
 df_final['drivers.fullname'] = df_final[['drivers.forename','drivers.surname']].apply(lambda x: ' '.join(x), axis=1)
-df_points = pd.read_csv('./data/points.csv',header = 0)
-
-# Requirements for the dash core components
+df_final['drivers.fullname'] = df_final[['drivers.forename','drivers.surname']].apply(lambda x: ' '.join(x), axis=1)
+df_final['points'] = df_final['points'].astype(int)
+df_final['races.year'] = df_final['races.year'].astype(int)
+df_final.replace('\\N','0', inplace=True)
+df_final['milliseconds'] = df_final['milliseconds'].astype(int)# Requirements for the dash core components
 
 circuit_options = [
     dict(label=circuit, value=circuit)
@@ -32,7 +37,7 @@ circuit_options = [
 season_slider = dcc.RangeSlider(
         id='season_slider',
         min=df_final['races.year'].min(),
-        max=2020,
+        max=df_final['races.year'].max(),
         tooltip={"placement": "bottom", "always_visible": True},
         marks={str(i): '{}'.format(str(i)) for i in
                list(range(1950,2021,5))},
@@ -382,8 +387,8 @@ def callback_2(year_value, click_map):
     # City # Country # Most Successful Driver / Constructor # Total Number of DNF # 
     city = df_final_circuit['circuits.location'].unique()[0]
     country = df_final_circuit['circuits.country'].unique()[0]
-    msd = df_final_circuit[(df_final_circuit['positionText'] == 1)].groupby('drivers.fullname')['drivers.fullname'].count().sort_values(ascending = False).index.tolist()[0]
-    msc = df_final_circuit[(df_final_circuit['positionText'] == 1)].groupby('constructors.name')['constructors.name'].count().sort_values(ascending = False).index.tolist()[0]    
+    msd = df_final_circuit[(df_final_circuit['positionText'] == '1')].groupby('drivers.fullname')['drivers.fullname'].count().sort_values(ascending = False).index.tolist()[0]
+    msc = df_final_circuit[(df_final_circuit['positionText'] == '1')].groupby('constructors.name')['constructors.name'].count().sort_values(ascending = False).index.tolist()[0]    
     year_list = (df_final_circuit['races.year'].unique()).tolist()
     year_list.sort()
     year_str = str(year_list)[1:-1]
@@ -391,7 +396,7 @@ def callback_2(year_value, click_map):
     pole_count = df_final_circuit[(df_final_circuit['grid'] == 1)].groupby('drivers.fullname',)['drivers.fullname'].count().sort_values(ascending = False)[0]
     pole_king = str(pole_name)+' - '+str(pole_count)
     #### LineChart Best Lap Times ####
-    avg_lap_time = df_final_circuit[df_final_circuit['positionText']==1]
+    avg_lap_time = df_final_circuit[df_final_circuit['positionText']=='1']
     avg_lap_time['avglaptime'] = avg_lap_time['milliseconds'] / avg_lap_time['laps']
             #gen_fast_lap = df_final_circuit[df_final_circuit['rank']==1]
             #gen_fast_lap['fastestLapTime'] = gen_fast_lap['fastestLapTime'].astype('str').apply(lambda x: time_to_mili(x))
@@ -413,7 +418,7 @@ def callback_2(year_value, click_map):
                         plot_bgcolor='rgba(0,0,0,0)')
 
     #### Pie Chart ####
-    contructors =df_final_circuit[(df_final_circuit['circuits.name'] == str(circuit_value)) & (df_final_circuit['positionText'] == 1)].groupby(['constructors.name', 'drivers.surname']).agg({'resultId': 'nunique'})
+    contructors =df_final_circuit[(df_final_circuit['circuits.name'] == str(circuit_value)) & (df_final_circuit['positionText'] == '1')].groupby(['constructors.name', 'drivers.surname']).agg({'resultId': 'nunique'})
     contructors.reset_index(inplace = True)
     fig = px.sunburst(contructors, 
                      path=['constructors.name', 'drivers.surname'],
@@ -423,7 +428,7 @@ def callback_2(year_value, click_map):
 
     # semi_circle
     total_races = len(df_final_circuit['races.year'].unique())
-    pole_is_win = len(df_final_circuit[(df_final_circuit['positionText'] == 1) & (df_final_circuit['grid'] == 1)])
+    pole_is_win = len(df_final_circuit[(df_final_circuit['positionText'] == '1') & (df_final_circuit['grid'] == 1)])
     number_accidents = len(df_final_circuit[(df_final_circuit['statusId'] == 3) | (df_final_circuit['statusId'] == 4)])
     race_with_accident = len(df_final_circuit[(df_final_circuit['statusId'] == 3) | (df_final_circuit['statusId'] == 4)].groupby('races.year').count())
     final_accidents = int((round(race_with_accident/total_races, 2))*100)
@@ -568,11 +573,11 @@ def callback_4(year_value, click_map, dvsc_value, client_dc_value):
             if dc == dc_name: 
                 if df_final_circuit['positionText'].iloc[j] in ret_list:
                     dnf_count+=1
-                elif df_final_circuit['positionText'].iloc[j] == 1:
+                elif df_final_circuit['positionText'].iloc[j] == '1':
                     first_count+=1
-                elif df_final_circuit['positionText'].iloc[j] == 2:
+                elif df_final_circuit['positionText'].iloc[j] == '2':
                     second_count+=1
-                elif df_final_circuit['positionText'].iloc[j] == 3:
+                elif df_final_circuit['positionText'].iloc[j] == '3':
                     third_count+=1
                 race_count+=1
 
@@ -710,7 +715,7 @@ def callback_5(client_driver):
         client_driver='Lewis Hamilton'
 
     driver_nationality = df_final[df_final['drivers.fullname']==client_driver]['drivers.nationality'].iloc[0]
-    podium_pos = [1,2,3]
+    podium_pos = ['1','2','3']
     npodiums = len(df_final[(df_final['drivers.fullname']==client_driver) & (df_final['positionText'].isin(podium_pos))])
     npoints = df_final[(df_final['drivers.fullname']==client_driver)].groupby('drivers.fullname')['points'].sum().reset_index()['points'].iloc[0]
     nraces = len(df_final[(df_final['drivers.fullname']==client_driver)])
