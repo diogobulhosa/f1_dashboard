@@ -1,9 +1,15 @@
+from http import client
+from pydoc import classname
+from turtle import color
 import dash
-from dash import dcc
+from dash import dcc, dash_table
 from dash import html
 from dash.dependencies import Input, Output
+import plotly.graph_objects as go
 import pandas as pd
-import warnings
+import numpy as np
+import plotly.express as px
+import dash_bootstrap_components as dbc
 
 df_final = pd.read_csv("cdrcrv2.csv",  sep=',',  encoding='latin-1')
 df_points = pd.read_csv('https://raw.githubusercontent.com/diogobulhosa/f1_dashboard/main/data/points.csv',header = 0)
