@@ -719,7 +719,8 @@ def callback_5(client_driver):
     ##### Position Scatter ######
     df_pos = df_final[(df_final['drivers.fullname']==client_driver)]
     df_pos = df_pos.groupby(['races.year', 'races.round','positionText']).count().reset_index()
-    df_pos['posTextInt'] = df_pos["positionText"].map(lambda x: '21' if x in ret_list else x)  
+    df_pos['posTextInt'] = df_pos["positionText"].map(lambda x: '21' if x in ret_list else x)
+    df_pos['posTextInt'] = df_pos['posTextInt'].astype(int)
     df_pos['round_year'] = df_pos['races.round'].astype(str) + ' ' + df_pos['races.year'].astype(str)
     driver_position = px.scatter(df_pos, x="round_year", y="posTextInt")
     driver_position.update_layout(font_color = 'white', paper_bgcolor='rgba(0,0,0,0)',
