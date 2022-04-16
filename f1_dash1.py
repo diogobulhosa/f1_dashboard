@@ -210,12 +210,16 @@ tab_pilots =  html.Div([
                         html.H3(id='npodiums')
                     ],className='box_circ_info'),
                 html.Div([
-                        html.H4('Carreer Points', style={'font-weight':'bold'}),
+                        html.H4('Career Points', style={'font-weight':'bold'}),
                         html.H3(id='carreerpoints')
                     ],className='box_circ_info'),
                 html.Div([
                         html.H4('Races Entered', style={'font-weight':'bold'}),
                         html.H3(id='races_entered')
+                    ],className='box_circ_info'),                
+                html.Div([
+                        html.H4('Years Racing', style={'font-weight':'bold'}),
+                        html.H3(id='year_driver')
                     ],className='box_circ_info'),
                 html.Div([
                         html.H4('Highest Race Finish', style={'font-weight':'bold'}),
@@ -242,7 +246,7 @@ tab_pilots =  html.Div([
         ],className='box', style={'margin-top': '3%', 'margin-left': '3%', 'display': 'table', }),
 
         html.Div([
-            html.H2('Carreer Finishes'),
+            html.H2('Career Finishes'),
             html.H3('The Positions are between 1-20, the 21th position refers to DNF.'),
             dcc.Graph(
                 id='race-finish'),                
@@ -491,7 +495,7 @@ def callback_3(year_value, click_map, dvsc_value):
     if len(df_final_circuit)==0:
         year_value_max= 2020
         year_value_min= 1950
-        year_value=[1950,2020]
+        year_value=[1950,2022]
         df_seasons = df_final.loc[(df_final['races.year'] <= year_value_max) & (df_final['races.year'] >= year_value_min)]
         df_final_circuit =  df_seasons.loc[(df_seasons['circuits.name'] == str(circuit_value))]       
     
@@ -698,6 +702,7 @@ def callback_4(year_value, click_map, dvsc_value, client_dc_value):
      Output(component_id='highest_race_finish', component_property='children'),
      Output(component_id='highest_grid', component_property='children'),
      Output(component_id='naccidents', component_property='children'),
+     Output(component_id='year_driver', component_property='children'),
      ],
     Input(component_id="driver_dropdown2", component_property='value')
 )
@@ -711,10 +716,13 @@ def callback_5(client_driver):
     npodiums = len(df_final[(df_final['drivers.fullname']==client_driver) & (df_final['positionText'].isin(podium_pos))])
     npoints = df_final[(df_final['drivers.fullname']==client_driver)].groupby('drivers.fullname')['points'].sum().reset_index()['points'].iloc[0]
     nraces = len(df_final[(df_final['drivers.fullname']==client_driver)])
+    year_list_driver = (df_final[(df_final['drivers.fullname']==client_driver)]['races.year'].unique()).tolist()
+    year_list_driver.sort()
+    year_str_driver = str(year_list_driver)[1:-1]
     ret_list = ['R', 'F', 'W', 'N', 'D','E']
     race_serie = df_final[(df_final['drivers.fullname']==client_driver) & ~(df_final['positionText'].isin(ret_list))]['positionText']
     highest_rf = race_serie.astype(int).min()
-    highest_grid_start = df_final[(df_final['drivers.fullname']==client_driver)]['grid'].min()
+    highest_grid_start = df_final[(df_final['drivers.fullname']==client_driver) & (df_final['grid']!=0)]['grid'].min()
     number_ret = len(df_final[(df_final['drivers.fullname']==client_driver) & (df_final['positionText'].isin(ret_list))])
     ##### Position Scatter ######
     df_pos = df_final[(df_final['drivers.fullname']==client_driver)]
@@ -726,7 +734,7 @@ def callback_5(client_driver):
     driver_position.update_layout(font_color = 'white', paper_bgcolor='rgba(0,0,0,0)',
                       plot_bgcolor='rgba(0,0,0,0)', xaxis_title="Race Year",
                       yaxis_title="Position")
-    driver_position.update_yaxes(autorange="reversed"),                 
+    driver_position.update_yaxes(autorange="reversed", tickvals = list(range(1,21))),                 
     driver_position.update_traces(marker=dict(size=5, color='red'))
 
     #### Point Progress ####
@@ -743,7 +751,7 @@ def callback_5(client_driver):
     driver_const.update_layout(paper_bgcolor='rgba(0,0,0,0)', font_color = 'white',
                       plot_bgcolor='rgba(0,0,0,0)')  
     
-    return driver_position, pointsplot, driver_const, str(driver_nationality), str(npodiums), str(npoints), str(nraces), str(highest_rf), str(highest_grid_start), str(number_ret)
+    return driver_position, pointsplot, driver_const, str(driver_nationality), str(npodiums), str(npoints), str(nraces), str(highest_rf), str(highest_grid_start), str(number_ret), str(year_str_driver)
 
 
 
